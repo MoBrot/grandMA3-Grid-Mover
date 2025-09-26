@@ -27,7 +27,7 @@ function split(str)
 end
 
 local function isNumber(str)
-    return tonumber(str) ~= nil
+  return tonumber(str) ~= nil
 end
 
 function setVariable(var, value)
@@ -37,6 +37,7 @@ end
 function getVariable(var)
   return GetVar(UserVars(), var)
 end
+
 ----------------
 
 local function GetSelectionTable()
@@ -57,10 +58,8 @@ local function GetSelectionTable()
   return result
 end
 
-function ajustGridForSelect(relative, axis, value, selection)
-
+function adjustGridForSelected(relative, axis, value, selection)
   for _, fixture in pairs(selection) do
-
     local x = fixture.gridX
     local y = fixture.gridY
     local z = fixture.gridZ
@@ -98,11 +97,11 @@ end
 
 function showError(errmessage)
   MessageBox({
-    title="Error!",
-    message=errmessage,
-    timeout=5000,
-    commands={
-      {value=1, name="Ok"}
+    title = "Error!",
+    message = errmessage,
+    timeout = 5000,
+    commands = {
+      { value = 1, name = "Ok" }
     }
   })
 end
@@ -131,34 +130,30 @@ function storeMacro(value, id, axis, mode)
     Cmd("Store Macro " .. currentID .. " /NoOops")
     macroObject = macroPool[currentID]
     macroObject:Set("name", name)
-    macroObject[1].Command = "#[Plugin " .. pluginID .. "] \"".. mode .."," .. axis .. "," .. value .. "\""
+    macroObject[1].Command = "#[Plugin " .. pluginID .. "] \"" .. mode .. "," .. axis .. "," .. value .. "\""
     macroObject[1].name = "Move"
 
     return currentID + 1
   end
 end
 
-
 function createMacros(startingID, mode, axis, value)
-
   local nextID = startingID
   value = math.abs(value)
 
   nextID = storeMacro(-value, nextID, axis, mode)
   nextID = storeMacro(value, nextID, axis, mode)
-
 end
 
 function createMacrosUI(mode, axis, value)
-
   local defaultIndex = getVariable(lastMacroIDVariable) or 1
 
   return MessageBox({
     title = "Create Macro Shortcuts",
     name = "Axis",
     message = "The created Macros will use the configuration of the Main UI." ..
-              "\n None of the existing Macros will be overwritten." ..
-              "\n \n -- Info -- \n Mode: " .. mode .. " | Axis: " .. axis .. " | Value: " .. value,
+        "\n None of the existing Macros will be overwritten." ..
+        "\n \n -- Info -- \n Mode: " .. mode .. " | Axis: " .. axis .. " | Value: " .. value,
     commands = {
       { value = 0, name = "Back" },
       { value = 1, name = "Create!" }
@@ -167,8 +162,8 @@ function createMacrosUI(mode, axis, value)
       {
         name = "Macro start ID",
         value = defaultIndex,
-        whitefilter="0123456789",
-        vkPlugin="TextInputNumOnly",
+        whitefilter = "0123456789",
+        vkPlugin = "TextInputNumOnly",
         maxtextLength = 4
       }
     },
@@ -176,13 +171,12 @@ function createMacrosUI(mode, axis, value)
 end
 
 function mainUI()
-
   local defaultMode = getVariable(modeVariable) or 0
   local defaultAxis = getVariable(axisVariable) or 2
   local defaultValue = getVariable(valueVariable) or 1
 
   return MessageBox({
-    title="Grid Mover - By MNLichtdesign",
+    title = "Grid Mover - By MNLichtdesign",
     selectors = {
       {
         name = "Axis",
@@ -195,7 +189,7 @@ function mainUI()
         }
       },
       {
-        name="Mode",
+        name = "Mode",
         type = 0,
         selectedValue = defaultMode,
         values = {
@@ -208,38 +202,36 @@ function mainUI()
       {
         name = "Value",
         value = defaultValue,
-        whitefilter="+-0123456789",
-        vkPlugin="TextInputNumOnly"
+        whitefilter = "+-0123456789",
+        vkPlugin = "TextInputNumOnly"
       }
     },
-    commands={
-      { value=0, name="Close" },
-      { value=1, name="Move" },
-      { value=2, name="Create Macros" }
+    commands = {
+      { value = 0, name = "Close" },
+      { value = 1, name = "Move" },
+      { value = 2, name = "Create Macros" }
     }
   })
 end
 
 function main(display, args)
-  pluginID =  luaCOmponentHandle:Parent().NO
+  pluginID = luaCOmponentHandle:Parent().NO
 
   local value = 0
   local axis = ""
   local relative = true
 
   if args == "" or args == nil then
-    
     local loop = true;
 
     while loop do
-
       local result = mainUI()
       local command = result.result
 
       if command == 0 or result.success == false then
         return
       end
-      
+
       -- Read values
       value = result.inputs["Value"];
       if value == nil then
@@ -248,7 +240,7 @@ function main(display, args)
 
       local value = tonumber(value)
       setVariable(valueVariable, value)
-        
+
       local modeSelection = result.selectors["Mode"]
       setVariable(modeVariable, modeSelection)
 
@@ -260,34 +252,31 @@ function main(display, args)
       setVariable(axisVariable, axisResult)
 
       if axisResult == 0 then
-        axis="x"
+        axis = "x"
       elseif axisResult == 1 then
-        axis="y"
+        axis = "y"
       elseif axisResult == 2 then
-        axis="z"
+        axis = "z"
       end
 
       if command == 0 then
         return;
-
       elseif command == 1 then
         loop = false
 
-      -- Create Macros
+        -- Create Macros
       elseif command == 2 then
-
         local mode = ""
         if relative then
           mode = "relative"
         else
           mode = "absolute"
-        end 
+        end
 
         local macroUIResult = createMacrosUI(mode, axis, value)
         local macroCommand = macroUIResult.result
 
         if macroCommand == 1 then
-          
           local macroStartingID = tonumber(macroUIResult.inputs["Macro start ID"])
           if macroStartingID == 0 then
             showError("The Macro ID must be a number between 1 and 9999")
@@ -302,36 +291,36 @@ function main(display, args)
         --return
       end
     end
-    else
-      -- Args could be Plugin X "relative,x,5"
-      local splittet = split(args)
-      local errorPrefix = pluginPrefix .. "Commandlineinput - "
+  else
+    -- Args could be Plugin X "relative,x,5"
+    local splitted = split(args)
+    local errorPrefix = pluginPrefix .. "Commandlineinput - "
 
-      if #splittet < 3 then
-        showError(errorPrefix .. "Not enough parameters.")
-        return
-      end
-
-      local mode = splittet[1]
-      axis = string.lower(splittet[2])
-      value = splittet[3]
-
-      -- Validate inputs
-      if not mode == "relative " or not mode == "absolute" then
-        showError(errorPrefix .. "First parameter needs to be 'absolute' or 'relative'.")
-        return
-      end
-
-      if not axis == "x" or not axis == "y" or not axis == "z" then
-        showError(errorPrefix .. "Second parameter needs to be x/y/z.")
-        return
-      end
-
-      if not isNumber(value) then
-        showError(errorPrefix .. "Third paramter needs to be a number.")
-        return
-      end
+    if #splitted < 3 then
+      showError(errorPrefix .. "Not enough parameters.")
+      return
     end
+
+    local mode = splitted[1]
+    axis = string.lower(splitted[2])
+    value = splitted[3]
+
+    -- Validate inputs
+    if not mode == "relative" or not mode == "absolute" then
+      showError(errorPrefix .. "First parameter needs to be 'absolute' or 'relative'.")
+      return
+    end
+
+    if not axis == "x" or not axis == "y" or not axis == "z" then
+      showError(errorPrefix .. "Second parameter needs to be x/y/z.")
+      return
+    end
+
+    if not isNumber(value) then
+      showError(errorPrefix .. "Third parameter needs to be a number.")
+      return
+    end
+  end
 
   local setupToggle = Selection().SETUPMODE
 
@@ -347,7 +336,7 @@ function main(display, args)
   end
 
   Selection().SETUPMODE = false
-  ajustGridForSelect(relative, axis, value, selection)
+  adjustGridForSelected(relative, axis, value, selection)
   Selection().SETUPMODE = true
   reselectAllFixtures(selection)
 end
