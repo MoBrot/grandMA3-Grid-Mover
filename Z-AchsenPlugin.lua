@@ -108,7 +108,16 @@ end
 
 -- return the id where it was stored + 1
 function storeMacro(value, id, axis, mode)
-  local name = pluginPrefix .. mode .. " " .. string.upper(axis) .. " " .. value
+
+  local valueAsText = value;
+  if value < 0 then
+    valueAsText = "-" .. math.abs(value)
+  else
+    valueAsText = "+" .. value
+  end
+
+
+  local name = pluginPrefix .. mode .. " " .. string.upper(axis) .. " " .. valueAsText
   local macroPool = DataPool().Macros
 
   if id < 9999 then
