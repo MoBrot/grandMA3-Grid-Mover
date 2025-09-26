@@ -59,10 +59,9 @@ local function GetSelectionTable()
 end
 
 function adjustGridForSelected(relative, axis, value, selection)
-  local progressHandle = StartProgress("Moving Fixtures")
+  local progressHandle = StartProgress(pluginPrefix .. "Moving Fixtures")
   local progressRangeStart, progressRangeEnd = 1, #selection
   SetProgressRange(progressHandle, progressRangeStart, progressRangeEnd)
-  SetProgressText(progressHandle, pluginPrefix .. "Moving Fixtures")
 
   for _, fixture in pairs(selection) do
     local x = fixture.gridX
