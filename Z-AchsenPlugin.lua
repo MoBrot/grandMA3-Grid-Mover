@@ -143,7 +143,7 @@ function createMacrosUI(mode, axis, value)
               "\n None of the existing Macros will be overwritten." ..
               "\n \n -- Info -- \n Mode: " .. mode .. " | Axis: " .. axis .. " | Value: " .. value,
     commands = {
-      { value = 0, name = "Cancel" },
+      { value = 0, name = "Back" },
       { value = 1, name = "Create!" }
     },
     inputs = {
@@ -205,62 +205,72 @@ function main(display, args)
   local axis = ""
   local relative = true
 
-  if args == "" or args == nil then 
-    local result = mainUI()
-    local command = result.result
-
-    if command == 0 or result.success == false then
-      return
-    end
+  if args == "" or args == nil then
     
-    -- Read values
-    value = result.inputs["Value"];
-    if value == nil then
-      showError("Value cannot be empty!")
-    end
+    local loop = true;
 
-    local value = tonumber(value)
-      
-    if result.selectors["Mode"] == 1 then
-      relative = false
-    end
+    while loop do
+      local result = mainUI()
+      local command = result.result
 
-    local axisResult = result.selectors["Axis"];
-    if axisResult == 0 then
-      axis="x"
-    elseif axisResult == 1 then
-      axis="y"
-    elseif axisResult == 2 then
-      axis="z"
-    end
-
-    -- Create Macros
-    if command == 2 then
-
-      local mode = ""
-      if relative then
-        mode = "relative"
-      else
-        mode = "absolute"
-      end 
-
-      local macroUIResult = createMacrosUI(mode, axis, value)
-      local macroCommand = macroUIResult.result
-
-      if macroCommand == 0 then
+      if command == 0 or result.success == false then
         return
-      elseif macroCommand == 1 then
+      end
+      
+      -- Read values
+      value = result.inputs["Value"];
+      if value == nil then
+        showError("Value cannot be empty!")
+      end
+
+      local value = tonumber(value)
         
-        local macroStartingID = tonumber(macroUIResult.inputs["Macro start ID"])
-        if macroStartingID == 0 then
-          showError("The Macro ID must be a number between 1 and 9999")
+      if result.selectors["Mode"] == 1 then
+        relative = false
+      end
+
+      local axisResult = result.selectors["Axis"];
+      if axisResult == 0 then
+        axis="x"
+      elseif axisResult == 1 then
+        axis="y"
+      elseif axisResult == 2 then
+        axis="z"
+      end
+
+      if command == 0 then
+        return;
+
+      elseif command == 1 then
+        loop = false
+
+      -- Create Macros
+      elseif command == 2 then
+
+        local mode = ""
+        if relative then
+          mode = "relative"
+        else
+          mode = "absolute"
+        end 
+
+        local macroUIResult = createMacrosUI(mode, axis, value)
+        local macroCommand = macroUIResult.result
+
+        if macroCommand == 1 then
+          
+          local macroStartingID = tonumber(macroUIResult.inputs["Macro start ID"])
+          if macroStartingID == 0 then
+            showError("The Macro ID must be a number between 1 and 9999")
+            return
+          end
+
+          createMacros(macroStartingID, mode, axis, value)
           return
         end
 
-        createMacros(macroStartingID, mode, axis, value)
+        --return
       end
-
-      return
     end
     else
       -- Args could be Plugin X "relative,x,5"
@@ -305,10 +315,6 @@ function main(display, args)
     showError("At least one Fixture must be selected!")
     return
   end
-
-  Printf("Relative: " .. tostring(relative))
-  Printf("Axis: " .. axis)
-  Printf("Value: " .. value)
 
   Selection().SETUPMODE = false
   ajustGridForSelect(relative, axis, value, selection)
