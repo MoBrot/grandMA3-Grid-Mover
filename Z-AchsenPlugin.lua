@@ -59,6 +59,11 @@ local function GetSelectionTable()
 end
 
 function adjustGridForSelected(relative, axis, value, selection)
+  local progressHandle = StartProgress("Moving Fixtures")
+  local progressRangeStart, progressRangeEnd = 1, #selection
+  SetProgressRange(progressHandle, progressRangeStart, progressRangeEnd)
+  SetProgressText(progressHandle, pluginPrefix .. "Moving Fixtures")
+
   for _, fixture in pairs(selection) do
     local x = fixture.gridX
     local y = fixture.gridY
@@ -86,7 +91,11 @@ function adjustGridForSelected(relative, axis, value, selection)
 
     executeCommand("Grid " .. x .. "/" .. y .. "/" .. z)
     executeCommand("Fixture " .. fixture.asFixture.FID)
+
+    IncProgress(progressHandle, 1)
   end
+
+  StopProgress(progressHandle)
 end
 
 function reselectAllFixtures(selection)
@@ -95,20 +104,8 @@ function reselectAllFixtures(selection)
   end
 end
 
-function showError(errmessage)
-  MessageBox({
-    title = "Error!",
-    message = errmessage,
-    timeout = 5000,
-    commands = {
-      { value = 1, name = "Ok" }
-    }
-  })
-end
-
 -- return the id where it was stored + 1
 function storeMacro(value, id, axis, mode)
-
   local valueAsText = value;
   if value < 0 then
     valueAsText = "-" .. math.abs(value)
@@ -219,6 +216,17 @@ function mainUI()
       { value = 0, name = "Close" },
       { value = 1, name = "Move" },
       { value = 2, name = "Create Macros" }
+    }
+  })
+end
+
+function showError(errmessage)
+  MessageBox({
+    title = "Error!",
+    message = errmessage,
+    timeout = 5000,
+    commands = {
+      { value = 1, name = "Ok" }
     }
   })
 end
