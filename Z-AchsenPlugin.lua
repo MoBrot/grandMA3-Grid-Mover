@@ -1,7 +1,14 @@
 local luaCOmponentHandle = select(4, ...)
-local pluginID = 60;
+local pluginID;
 
 local pluginPrefix = "Grid Mover - "
+
+local variablePrefix = "gridmover-"
+local modeVariable = variablePrefix .. "default-mode"
+local axisVariable = variablePrefix .. "default-axis"
+local valueVariable = variablePrefix .. "default-value"
+
+local lastMacroIDVariable = variablePrefix .. "default-macro-id"
 
 --- Util ---
 function executeCommand(cmd)
@@ -21,6 +28,14 @@ end
 
 local function isNumber(str)
     return tonumber(str) ~= nil
+end
+
+function setVariable(var, value)
+  SetVar(UserVars(), var, value)
+end
+
+function getVariable(var)
+  return GetVar(UserVars(), var)
 end
 ----------------
 
@@ -136,6 +151,8 @@ end
 
 function createMacrosUI(mode, axis, value)
 
+  local defaultIndex = getVariable(lastMacroIDVariable) or 1
+
   return MessageBox({
     title = "Create Macro Shortcuts",
     name = "Axis",
@@ -149,7 +166,7 @@ function createMacrosUI(mode, axis, value)
     inputs = {
       {
         name = "Macro start ID",
-        value = 1,
+        value = defaultIndex,
         whitefilter="0123456789",
         vkPlugin="TextInputNumOnly",
         maxtextLength = 4
@@ -159,13 +176,18 @@ function createMacrosUI(mode, axis, value)
 end
 
 function mainUI()
+
+  local defaultMode = getVariable(modeVariable) or 0
+  local defaultAxis = getVariable(axisVariable) or 2
+  local defaultValue = getVariable(valueVariable) or 1
+
   return MessageBox({
     title="Grid Mover - By MNLichtdesign",
     selectors = {
       {
         name = "Axis",
         type = 1,
-        selectedValue = 2,
+        selectedValue = defaultAxis,
         values = {
           ["Grid X"] = 0,
           ["Grid Y"] = 1,
@@ -175,7 +197,7 @@ function mainUI()
       {
         name="Mode",
         type = 0,
-        selectedValue = 0,
+        selectedValue = defaultMode,
         values = {
           ["Relative"] = 0,
           ["Absolute"] = 1
@@ -185,7 +207,7 @@ function mainUI()
     inputs = {
       {
         name = "Value",
-        value = 1,
+        value = defaultValue,
         whitefilter="+-0123456789",
         vkPlugin="TextInputNumOnly"
       }
@@ -210,6 +232,7 @@ function main(display, args)
     local loop = true;
 
     while loop do
+
       local result = mainUI()
       local command = result.result
 
@@ -224,12 +247,18 @@ function main(display, args)
       end
 
       local value = tonumber(value)
+      setVariable(valueVariable, value)
         
-      if result.selectors["Mode"] == 1 then
+      local modeSelection = result.selectors["Mode"]
+      setVariable(modeVariable, modeSelection)
+
+      if modeSelection == 1 then
         relative = false
       end
 
       local axisResult = result.selectors["Axis"];
+      setVariable(axisVariable, axisResult)
+
       if axisResult == 0 then
         axis="x"
       elseif axisResult == 1 then
@@ -264,6 +293,7 @@ function main(display, args)
             showError("The Macro ID must be a number between 1 and 9999")
             return
           end
+          setVariable(lastMacroIDVariable, macroStartingID)
 
           createMacros(macroStartingID, mode, axis, value)
           return
