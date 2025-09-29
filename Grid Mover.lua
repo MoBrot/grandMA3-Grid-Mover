@@ -45,12 +45,23 @@ local function GetSelectionTable()
   local fixtureIndex, gridX, gridY, gridZ = SelectionFirst()
 
   while fixtureIndex do
+
+    local asFixture = GetSubfixture(fixtureIndex)
+    local fid;
+
+    if asFixture.FID == nil then
+      fid = string.gsub((asFixture.Fixture .. "." .. asFixture.NO), "Fixture", "")
+    else
+      fid = "Fixture " .. asFixture.FID
+    end
+
     table.insert(result, {
       fixtureIndex = fixtureIndex,
       gridX = gridX,
       gridY = gridY,
       gridZ = gridZ,
-      asFixture = GetSubfixture(fixtureIndex)
+      asFixture = asFixture,
+      FID = fid
     })
     fixtureIndex, gridX, gridY, gridZ = SelectionNext(fixtureIndex)
   end
@@ -64,6 +75,7 @@ function adjustGridForSelected(relative, axis, value, selection)
   SetProgressRange(progressHandle, progressRangeStart, progressRangeEnd)
 
   for _, fixture in pairs(selection) do
+
     local x = fixture.gridX
     local y = fixture.gridY
     local z = fixture.gridZ
@@ -89,7 +101,7 @@ function adjustGridForSelected(relative, axis, value, selection)
     end
 
     executeCommand("Grid " .. x .. "/" .. y .. "/" .. z)
-    executeCommand("Fixture " .. fixture.asFixture.FID)
+    executeCommand(fixture.FID)
 
     IncProgress(progressHandle, 1)
   end
@@ -99,7 +111,7 @@ end
 
 function reselectAllFixtures(selection)
   for _, fixture in pairs(selection) do
-    executeCommand("Fixture " .. fixture.asFixture.FID)
+    executeCommand(fixture.FID)
   end
 end
 
