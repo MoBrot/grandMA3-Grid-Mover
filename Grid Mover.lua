@@ -40,24 +40,6 @@ end
 
 ----------------
 
-function getFullID(fixture)
-
-  local current = fixture;
-  local id = "";
-
-  while true do
-    current:Dump()
-
-    if current:GetClass() ~= nil and current:GetClass() == "Fixture" then
-      return  string.sub(current.FID .. "." .. id, 1, -2);
-    else
-      id = current.no .. "." .. id
-    end
-
-    current = current:Parent();
-  end
-end
-
 local function GetSelectionTable()
   local result = {}
   local fixtureIndex, gridX, gridY, gridZ = SelectionFirst()
@@ -115,7 +97,7 @@ function adjustGridForSelected(relative, axis, value, selection)
     end
 
     executeCommand("Grid " .. x .. "/" .. y .. "/" .. z)
-    executeCommand(fixture.FID)
+    executeCommand(fixture.asFixture:ToAddr())
 
     IncProgress(progressHandle, 1)
   end
