@@ -40,6 +40,24 @@ end
 
 ----------------
 
+function getFullID(fixture)
+
+  local current = fixture;
+  local id = "";
+
+  while true do
+    current:Dump()
+
+    if current:GetClass() ~= nil and current:GetClass() == "Fixture" then
+      return  string.sub(current.FID .. "." .. id, 1, -2);
+    else
+      id = current.no .. "." .. id
+    end
+
+    current = current:Parent();
+  end
+end
+
 local function GetSelectionTable()
   local result = {}
   local fixtureIndex, gridX, gridY, gridZ = SelectionFirst()
@@ -47,13 +65,9 @@ local function GetSelectionTable()
   while fixtureIndex do
 
     local asFixture = GetSubfixture(fixtureIndex)
-    local fid;
+    local id = getFullID(asFixture)
 
-    if asFixture.FID == nil then
-      fid = string.gsub((asFixture.Fixture .. "." .. asFixture.NO), "Fixture", "")
-    else
-      fid = "Fixture " .. asFixture.FID
-    end
+    Printf(id)
 
     table.insert(result, {
       fixtureIndex = fixtureIndex,
@@ -61,7 +75,7 @@ local function GetSelectionTable()
       gridY = gridY,
       gridZ = gridZ,
       asFixture = asFixture,
-      FID = fid
+      FID = id
     })
     fixtureIndex, gridX, gridY, gridZ = SelectionNext(fixtureIndex)
   end
