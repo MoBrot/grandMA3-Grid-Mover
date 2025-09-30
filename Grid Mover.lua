@@ -69,6 +69,8 @@ function adjustGridForSelected(relative, axis, value, selection)
   local progressRangeStart, progressRangeEnd = 1, #selection
   SetProgressRange(progressHandle, progressRangeStart, progressRangeEnd)
 
+  table.insert(selection, selection[1])
+
   for _, fixture in pairs(selection) do
 
     local x = fixture.gridX
@@ -105,6 +107,9 @@ function adjustGridForSelected(relative, axis, value, selection)
 end
 
 function reselectAllFixtures(selection)
+
+  table.insert(selection, selection[#selection])
+
   for _, fixture in pairs(selection) do
     executeCommand(fixture.id)
   end
@@ -345,23 +350,21 @@ function main(display, args)
     end
   end
 
-  local setupToggle = Selection().SETUPMODE
-
-  if setupToggle == false then
-    showError("Fixtures must be selected in the Selectiongrid Setup mode!")
-    return
-  end
-
-  local selection = GetSelectionTable()
-  if #selection == 0 then
+  if SelectionCount() == 0 then
     showError("At least one Fixture must be selected!")
     return
   end
 
+  local selection = GetSelectionTable()
+  local setupToggle = Selection().SETUPMODE
+
   Selection().SETUPMODE = false
   adjustGridForSelected(relative, axis, value, selection)
-  Selection().SETUPMODE = true
-  reselectAllFixtures(selection)
+  Selection().SETUPMODE = setupToggle
+
+  if setupToggle == true then
+    reselectAllFixtures(selection)
+  end
 end
 
 return main
