@@ -47,7 +47,6 @@ local function GetSelectionTable()
   while fixtureIndex do
 
     local asFixture = GetSubfixture(fixtureIndex)
-    local id = getFullID(asFixture)
 
     Printf(id)
 
