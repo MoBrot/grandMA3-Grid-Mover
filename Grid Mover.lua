@@ -56,7 +56,7 @@ local function GetSelectionTable()
       gridY = gridY,
       gridZ = gridZ,
       asFixture = asFixture,
-      FID = id
+      id = asFixture:ToAddr()
     })
     fixtureIndex, gridX, gridY, gridZ = SelectionNext(fixtureIndex)
   end
@@ -96,7 +96,7 @@ function adjustGridForSelected(relative, axis, value, selection)
     end
 
     executeCommand("Grid " .. x .. "/" .. y .. "/" .. z)
-    executeCommand(fixture.asFixture:ToAddr())
+    executeCommand(fixture.id)
 
     IncProgress(progressHandle, 1)
   end
@@ -106,7 +106,7 @@ end
 
 function reselectAllFixtures(selection)
   for _, fixture in pairs(selection) do
-    executeCommand(fixture.FID)
+    executeCommand(fixture.id)
   end
 end
 
