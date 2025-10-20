@@ -16,7 +16,7 @@
 
 Before using the plugin, select one or more fixtures in the **Selection Grid**.
 
-> 💡 If you're in **Setup Mode**, you can also move only a specific portion of the selected fixtures.
+> 💡 If you're in **Setup Mode**, you can also move only a specific portion of the selected fixtures by doing a "subselection" of the hole Selection.
 
 ### 2. Plugin Parameters
 
