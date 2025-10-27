@@ -158,7 +158,7 @@ end
 function createMacros(startingID, mode, axis, value)
   local nextID = startingID
 
-  if not value == dynamic then
+  if value ~= dynamic then
     value = math.abs(value)
     nextID = storeMacro(-value, nextID, axis, mode)
   end
@@ -365,7 +365,7 @@ function main(display, args)
     value = splitted[3]
 
     -- Validate inputs
-    if not mode == "relative" or not mode == "absolute" then
+    if mode == "relative" or not mode == "absolute" then
       showError(errorPrefix .. "First parameter needs to be 'absolute' or 'relative'.")
       return
     end
