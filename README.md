@@ -36,10 +36,12 @@ When you run the plugin, you can configure the following parameters:
 
 When generating macros:
 
-- The current plugin configuration (from the main menu) is used.
-- Two macros are always created:
+- The current plugin configuration (from the main menu) is used or a dynamic value if it is selected.
+- Two macros are created when not using the dynamic value:
   - One for a **positive** value
   - One for a **negative** value
+- If the dynamic value is selected:
+  - One macro will created and when calling it, a window will open for the value input.
 - The plugin **will not overwrite** existing macros.
 - Macros are stored in the **next available pool slot**.
 
