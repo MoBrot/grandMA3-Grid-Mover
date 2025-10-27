@@ -10,6 +10,8 @@ local valueVariable = variablePrefix .. "default-value"
 
 local lastMacroIDVariable = variablePrefix .. "default-macro-id"
 
+local dynamic = "dynamic"
+
 --- Util ---
 function executeCommand(cmd)
   Cmd(cmd)
@@ -45,7 +47,6 @@ local function GetSelectionTable()
   local fixtureIndex, gridX, gridY, gridZ = SelectionFirst()
 
   while fixtureIndex do
-
     local asFixture = GetSubfixture(fixtureIndex)
 
     Printf(id)
@@ -72,7 +73,6 @@ function adjustGridForSelected(relative, axis, value, selection)
   table.insert(selection, selection[1])
 
   for _, fixture in pairs(selection) do
-
     local x = fixture.gridX
     local y = fixture.gridY
     local z = fixture.gridZ
@@ -107,7 +107,6 @@ function adjustGridForSelected(relative, axis, value, selection)
 end
 
 function reselectAllFixtures(selection)
-
   table.insert(selection, selection[#selection])
 
   for _, fixture in pairs(selection) do
@@ -118,10 +117,12 @@ end
 -- return the id where it was stored + 1
 function storeMacro(value, id, axis, mode)
   local valueAsText = value;
-  if value < 0 then
-    valueAsText = "-" .. math.abs(value)
-  else
-    valueAsText = "+" .. value
+  if not value == dynamic then
+    if value < 0 then
+      valueAsText = "-" .. math.abs(value)
+    else
+      valueAsText = "+" .. value
+    end
   end
 
 
@@ -156,9 +157,12 @@ end
 
 function createMacros(startingID, mode, axis, value)
   local nextID = startingID
-  value = math.abs(value)
 
-  nextID = storeMacro(-value, nextID, axis, mode)
+  if not value == dynamic then
+    value = math.abs(value)
+    nextID = storeMacro(-value, nextID, axis, mode)
+  end
+
   nextID = storeMacro(value, nextID, axis, mode)
 end
 
@@ -174,6 +178,12 @@ function createMacrosUI(mode, axis, value)
     commands = {
       { value = 0, name = "Back" },
       { value = 1, name = "Create!" }
+    },
+    states = {
+      {
+        name = "Dynamic Value",
+        state = false
+      }
     },
     inputs = {
       {
@@ -238,6 +248,24 @@ function showError(errmessage)
     timeout = 5000,
     commands = {
       { value = 1, name = "Ok" }
+    }
+  })
+end
+
+function createDynamicValueInput()
+  return MessageBox({
+    title = "Input the value of your Choice",
+    commands = {
+      { value = 0, name = "Cencel" },
+      { value = 1, name = "Move" },
+    },
+    inputs = {
+      {
+        name = "Value",
+        value = "",
+        whitefilter = "+-0123456789",
+        vkPlugin = "TextInputNumOnly"
+      }
     }
   })
 end
@@ -312,6 +340,9 @@ function main(display, args)
           end
           setVariable(lastMacroIDVariable, macroStartingID)
 
+          if macroUIResult.states["Dynamic Value"] == true then
+            value = dynamic
+          end
           createMacros(macroStartingID, mode, axis, value)
           return
         end
@@ -344,9 +375,11 @@ function main(display, args)
       return
     end
 
-    if not isNumber(value) then
-      showError(errorPrefix .. "Third parameter needs to be a number.")
-      return
+    if not value == dynamic then
+      if not isNumber(value) then
+        showError(errorPrefix .. "Third parameter needs to be a number.")
+        return
+      end
     end
   end
 
@@ -359,6 +392,24 @@ function main(display, args)
   local setupToggle = Selection().SETUPMODE
 
   Selection().SETUPMODE = false
+
+  if value == dynamic then
+    local dynamic = createDynamicValueInput()
+
+    if dynamic.result == 0 then
+      Selection().SETUPMODE = setupToggle
+      return
+    end
+
+    local tempValue = dynamic.inputs["Value"]
+
+    if tempValue == "" or tempValue == nil then
+      showError("Value cannot be empty :)")
+      return
+    end
+
+    value = tempValue
+  end
   adjustGridForSelected(relative, axis, value, selection)
   Selection().SETUPMODE = setupToggle
 
